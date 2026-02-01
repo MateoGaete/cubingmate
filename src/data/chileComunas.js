@@ -1,0 +1,85 @@
+// Lista de comunas de Chile principales ordenadas alfabéticamente de A a Z
+// Puedes expandir esta lista según tus necesidades
+
+export const chileComunas = [
+  { value: 'antofagasta', label: 'Antofagasta' },
+  { value: 'arica', label: 'Arica' },
+  { value: 'calama', label: 'Calama' },
+  { value: 'chillan', label: 'Chillán' },
+  { value: 'colina', label: 'Colina' },
+  { value: 'concepcion', label: 'Concepción' },
+  { value: 'conchali', label: 'Conchalí' },
+  { value: 'copiapo', label: 'Copiapó' },
+  { value: 'coquimbo', label: 'Coquimbo' },
+  { value: 'curico', label: 'Curicó' },
+  { value: 'el-bosque', label: 'El Bosque' },
+  { value: 'independencia', label: 'Independencia' },
+  { value: 'iquique', label: 'Iquique' },
+  { value: 'la-cisterna', label: 'La Cisterna' },
+  { value: 'la-florida', label: 'La Florida' },
+  { value: 'la-pintana', label: 'La Pintana' },
+  { value: 'la-reina', label: 'La Reina' },
+  { value: 'la-serena', label: 'La Serena' },
+  { value: 'lampa', label: 'Lampa' },
+  { value: 'las-condes', label: 'Las Condes' },
+  { value: 'los-angeles', label: 'Los Ángeles' },
+  { value: 'macul', label: 'Macul' },
+  { value: 'maipu', label: 'Maipú' },
+  { value: 'nunoa', label: 'Ñuñoa' },
+  { value: 'otra', label: 'Otra comuna' },
+  { value: 'penalolen', label: 'Peñalolén' },
+  { value: 'providencia', label: 'Providencia' },
+  { value: 'puente-alto', label: 'Puente Alto' },
+  { value: 'puerto-montt', label: 'Puerto Montt' },
+  { value: 'quilicura', label: 'Quilicura' },
+  { value: 'quillota', label: 'Quillota' },
+  { value: 'rancagua', label: 'Rancagua' },
+  { value: 'recoleta', label: 'Recoleta' },
+  { value: 'san-antonio', label: 'San Antonio' },
+  { value: 'san-bernardo', label: 'San Bernardo' },
+  { value: 'san-joaquin', label: 'San Joaquín' },
+  { value: 'san-miguel', label: 'San Miguel' },
+  { value: 'santiago', label: 'Santiago' },
+  { value: 'talcahuano', label: 'Talcahuano' },
+  { value: 'talca', label: 'Talca' },
+  { value: 'temuco', label: 'Temuco' },
+  { value: 'valdivia', label: 'Valdivia' },
+  { value: 'valparaiso', label: 'Valparaíso' },
+  { value: 'vina-del-mar', label: 'Viña del Mar' },
+  { value: 'vitacura', label: 'Vitacura' }
+]
+
+// Comunas que tienen servicio de BlueExpress
+// Puedes expandir esta lista según la cobertura real de BlueExpress
+export const blueExpressComunas = [
+  'antofagasta',
+  'arica',
+  'chillan',
+  'concepcion',
+  'iquique',
+  'la-florida',
+  'la-reina',
+  'la-serena',
+  'las-condes',
+  'macul',
+  'maipu',
+  'nunoa',
+  'penalolen',
+  'providencia',
+  'puente-alto',
+  'rancagua',
+  'san-bernardo',
+  'san-miguel',
+  'santiago',
+  'talca',
+  'talcahuano',
+  'temuco',
+  'valdivia',
+  'valparaiso',
+  'vina-del-mar',
+  'vitacura'
+]
+
+export const hasBlueExpress = (comuna) => {
+  return blueExpressComunas.includes(comuna)
+}

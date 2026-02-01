@@ -1,0 +1,71 @@
+.checkout-success {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 2rem;
+}
+
+.success-content {
+  background: white;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.success-icon {
+  color: #28a745;
+  margin-bottom: 1.5rem;
+}
+
+.checkout-success h1 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.checkout-success p {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  color: #28a745;
+  font-weight: 500;
+  margin-top: 1.5rem;
+}
+
+.order-id-info {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.success-actions {
+  margin-top: 2rem;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: #00b4d8;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+}

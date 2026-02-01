@@ -1,0 +1,67 @@
+.checkout-failure {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 2rem;
+}
+
+.failure-content {
+  background: white;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.failure-icon {
+  color: #dc3545;
+  margin-bottom: 1.5rem;
+}
+
+.checkout-failure h1 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.checkout-failure p {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.failure-message {
+  color: #dc3545;
+  font-weight: 500;
+  margin-top: 1.5rem;
+}
+
+.failure-actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-block;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+
+.btn-primary {
+  background: #00b4d8;
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: scale(1.05);
+}
