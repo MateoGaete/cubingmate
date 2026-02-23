@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { createOrder } from '../firebase/orders'
-import { createPaymentPreference } from '../services/mercadoPago'
 import { chileComunas, hasBlueExpress } from '../data/chileComunas'
-import { CreditCard, Truck, User } from 'lucide-react'
+import { Building2, Truck, User } from 'lucide-react'
 import './Checkout.css'
 
 function Checkout() {
@@ -35,8 +34,8 @@ function Checkout() {
     blueExpress: false
   })
 
-  // Paso 3: Cobro
-  const [paymentMethod, setPaymentMethod] = useState('tarjeta') // tarjeta, otro
+  // Paso 3: Método de pago (solo transferencia)
+  const [paymentMethod, setPaymentMethod] = useState('transferencia')
 
   useEffect(() => {
     const cartData = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -166,8 +165,8 @@ function Checkout() {
       return
     }
 
-    if (paymentMethod !== 'tarjeta') {
-      alert('Por el momento solo aceptamos pagos con tarjeta de débito o crédito')
+    if (paymentMethod !== 'transferencia') {
+      alert('Por el momento solo aceptamos pagos por transferencia bancaria')
       return
     }
 
@@ -210,26 +209,13 @@ function Checkout() {
 
       console.log('📦 Datos de la orden preparados:', orderData)
 
-      // Crear orden en Firebase primero
+      // Crear orden en Firebase
       console.log('🔥 Creando orden en Firebase...')
       const orderId = await createOrder(orderData)
       console.log('✅ Orden creada en Firebase con ID:', orderId)
 
-      // Crear preferencia de pago en Mercado Pago con el orderId
-      console.log('💳 Creando preferencia de pago en Mercado Pago...')
-      const paymentUrl = await createPaymentPreference({
-        ...orderData,
-        orderId
-      })
-
-      console.log('✅ Preferencia creada, redirigiendo a:', paymentUrl)
-
-      // Redirigir a Mercado Pago
-      if (paymentUrl && paymentUrl.startsWith('http')) {
-        window.location.href = paymentUrl
-      } else {
-        throw new Error('La URL de pago no es válida')
-      }
+      // Redirigir a página de instrucciones de transferencia
+      navigate(`/checkout/transfer?orderId=${orderId}`)
 
     } catch (error) {
       console.error('❌ Error procesando pedido:', error)
@@ -242,26 +228,19 @@ function Checkout() {
         errorMessage = error.message
         
         // Traducir errores comunes a español más claro
-        if (error.message.includes('Access Token') || error.message.includes('401')) {
-          errorMessage = '❌ Error: Token de Mercado Pago inválido o no configurado.\n\n' +
-            'Por favor:\n' +
-            '1. Abre el archivo: src/services/mercadoPago.js\n' +
-            '2. Verifica que el Access Token esté configurado (línea 9)\n' +
-            '3. Debe comenzar con APP_USR- (producción) o TEST- (prueba)\n' +
-            '4. Obtén tu token en: https://www.mercadopago.cl/developers/panel/credentials'
-        } else if (error.message.includes('No hay productos')) {
+        if (error.message.includes('No hay productos')) {
           errorMessage = '❌ Error: No hay productos en el carrito.\n\nPor favor agrega productos antes de pagar.'
         } else if (error.message.includes('Faltan datos')) {
           errorMessage = '❌ Error: Faltan datos del formulario.\n\nPor favor completa todos los campos antes de pagar.'
         } else if (error.message.includes('400')) {
-          errorMessage = '❌ Error: Datos inválidos enviados a Mercado Pago.\n\n' +
+          errorMessage = '❌ Error: Datos inválidos.\n\n' +
             'Verifica que:\n' +
             '- Todos los campos estén completos\n' +
             '- El email tenga formato válido\n' +
             '- El nombre tenga al menos 2 caracteres\n' +
             '- Los precios sean números válidos'
         } else if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
-          errorMessage = '❌ Error: No se pudo conectar con Mercado Pago.\n\n' +
+          errorMessage = '❌ Error: No se pudo conectar con el servidor.\n\n' +
             'Verifica tu conexión a internet e intenta nuevamente.'
         } else if (error.message.includes('Firebase')) {
           errorMessage = '❌ Error: No se pudo crear la orden en Firebase.\n\n' +
@@ -305,8 +284,8 @@ function Checkout() {
         <div className={`step-indicator ${currentStep >= 3 ? 'active' : ''}`}>
           <div className="step-number">3</div>
           <div className="step-label">
-            <CreditCard size={20} />
-            <span>Cobro</span>
+            <Building2 size={20} />
+            <span>Pago</span>
           </div>
         </div>
       </div>
@@ -532,7 +511,7 @@ function Checkout() {
             </div>
           )}
 
-          {/* Paso 3: Cobro */}
+          {/* Paso 3: Pago por Transferencia */}
           {currentStep === 3 && (
             <div className="checkout-step">
               <h2>Paso 3: Método de Pago</h2>
@@ -542,24 +521,25 @@ function Checkout() {
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="tarjeta"
-                      checked={paymentMethod === 'tarjeta'}
+                      value="transferencia"
+                      checked={paymentMethod === 'transferencia'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
+                      disabled
                     />
                     <div className="payment-option-content">
-                      <CreditCard size={24} />
+                      <Building2 size={24} />
                       <div>
-                        <strong>Tarjeta de Débito o Crédito</strong>
-                        <p>Paga de forma segura con Mercado Pago</p>
+                        <strong>Transferencia Bancaria</strong>
+                        <p>Realiza una transferencia bancaria</p>
                       </div>
                     </div>
                   </label>
                 </div>
 
-                {paymentMethod === 'tarjeta' && (
+                {paymentMethod === 'transferencia' && (
                   <div className="payment-info">
-                    <p>Serás redirigido a Mercado Pago para completar el pago de forma segura.</p>
-                    <p className="payment-security">🔒 Tu información está protegida</p>
+                    <p>Al confirmar tu pedido, recibirás las instrucciones para realizar la transferencia bancaria.</p>
+                    <p className="payment-security">💳 Una vez recibamos el pago, procesaremos tu pedido</p>
                   </div>
                 )}
 
@@ -572,7 +552,7 @@ function Checkout() {
                     className="btn-submit"
                     disabled={loading}
                   >
-                    {loading ? 'Procesando...' : 'Pagar con Mercado Pago'}
+                    {loading ? 'Procesando...' : 'Confirmar Pedido'}
                   </button>
                 </div>
               </form>
@@ -636,7 +616,7 @@ function Checkout() {
           {currentStep === 3 && (
             <div className="step-summary">
               <h3>Método de Pago</h3>
-              <p>Tarjeta de Débito o Crédito</p>
+              <p>Pago por Transferencia</p>
             </div>
           )}
         </div>

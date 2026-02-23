@@ -48,10 +48,15 @@ try {
   db = getFirestore(app)
   auth = getAuth(app)
   storage = getStorage(app)
+  
+  console.log('✅ Firebase inicializado correctamente')
 } catch (error) {
-  console.error('Error inicializando Firebase:', error)
+  console.error('❌ Error inicializando Firebase:', error)
   // Crear valores por defecto para evitar errores
   app = null
+  db = null
+  auth = null
+  storage = null
 }
 
 // Inicializar servicios

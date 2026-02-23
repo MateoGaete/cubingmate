@@ -1,6 +1,6 @@
 # 🧩 CubingMate - Tienda Online de Cubos de Rubik
 
-Tienda web moderna para la venta de cubos de Rubik y productos relacionados, desarrollada con React, Firebase y Mercado Pago.
+Tienda web moderna para la venta de cubos de Rubik y productos relacionados, desarrollada con React y Firebase.
 
 ## 📋 Tabla de Contenidos
 
@@ -8,7 +8,6 @@ Tienda web moderna para la venta de cubos de Rubik y productos relacionados, des
 - [Tecnologías](#tecnologías)
 - [Instalación](#instalación)
 - [Configuración de Firebase](#configuración-de-firebase)
-- [Configuración de Mercado Pago](#configuración-de-mercado-pago)
 - [Uso](#uso)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Agregar Productos](#agregar-productos)
@@ -18,7 +17,7 @@ Tienda web moderna para la venta de cubos de Rubik y productos relacionados, des
 
 - 🛍️ Catálogo de productos con categorías
 - 🛒 Carrito de compras funcional
-- 💳 Integración con Mercado Pago para pagos
+- 💳 Sistema de pagos (pendiente de implementar)
 - 🔥 Base de datos en tiempo real con Firebase Firestore
 - 📱 Diseño responsive (móvil y desktop)
 - 🎨 Interfaz moderna y atractiva
@@ -28,7 +27,6 @@ Tienda web moderna para la venta de cubos de Rubik y productos relacionados, des
 - **React 18** - Biblioteca de JavaScript para interfaces
 - **Vite** - Herramienta de construcción rápida
 - **Firebase** - Backend como servicio (Firestore, Auth, Storage)
-- **Mercado Pago** - Pasarela de pagos
 - **React Router** - Navegación entre páginas
 - **Lucide React** - Iconos modernos
 
@@ -39,7 +37,6 @@ Tienda web moderna para la venta de cubos de Rubik y productos relacionados, des
 - Node.js (versión 16 o superior)
 - npm o yarn
 - Cuenta de Firebase
-- Cuenta de desarrollador de Mercado Pago
 
 ### Pasos
 
@@ -52,7 +49,6 @@ Tienda web moderna para la venta de cubos de Rubik y productos relacionados, des
 
 3. **Configurar Firebase** (ver sección siguiente)
 
-4. **Configurar Mercado Pago** (ver sección siguiente)
 
 5. **Iniciar el servidor de desarrollo**
    ```bash
@@ -128,41 +124,22 @@ service cloud.firestore {
 
 3. Haz clic en **Publicar**
 
-## 💳 Configuración de Mercado Pago
+## 💳 Configuración de Pagos
 
-### Paso 1: Crear Cuenta de Desarrollador
+### Transferencia Bancaria
 
-1. Ve a [Mercado Pago Developers](https://www.mercadopago.cl/developers)
-2. Inicia sesión con tu cuenta de Mercado Pago
-3. Si no tienes cuenta, créala en [Mercado Pago](https://www.mercadopago.cl)
+El sistema utiliza transferencias bancarias como método de pago. Los clientes recibirán las instrucciones de transferencia después de completar el checkout.
 
-### Paso 2: Obtener Access Token
+**Para configurar tus datos bancarios:**
 
-1. En el panel de desarrolladores, ve a **Tus integraciones**
-2. Crea una nueva aplicación o selecciona una existente
-3. Ve a **Credenciales de producción** (o **Credenciales de prueba** para desarrollo)
-4. Copia tu **Access Token**
-
-### Paso 3: Configurar en el Proyecto
-
-1. Abre el archivo `src/services/mercadoPago.js`
-2. Reemplaza `TU_ACCESS_TOKEN_AQUI` con tu Access Token:
-
-```javascript
-const MERCADO_PAGO_ACCESS_TOKEN = 'TU_ACCESS_TOKEN_AQUI'
-```
-
-### Modo de Prueba
-
-Para probar pagos sin usar dinero real:
-
-1. Usa las **Credenciales de prueba** de Mercado Pago
-2. Usa estas tarjetas de prueba:
-   - **Aprobada**: 5031 7557 3453 0604
-   - **Rechazada**: 5031 4332 1540 6351
-   - CVV: 123
-   - Fecha: Cualquier fecha futura
-   - Nombre: APRO
+1. Edita el archivo `src/pages/TransferInstructions.jsx`
+2. Actualiza los siguientes datos con tu información bancaria:
+   - `bankName`: Nombre de tu banco
+   - `accountType`: Tipo de cuenta (Cuenta Corriente, Cuenta Vista, etc.)
+   - `accountNumber`: Número de cuenta
+   - `accountHolder`: Nombre del titular
+   - `rut`: RUT del titular
+   - `email`: Email para confirmaciones de pago
 
 ## 🚀 Uso
 
@@ -208,7 +185,6 @@ CubingMate.Web/
 │   │   ├── products.js
 │   │   └── orders.js
 │   ├── services/         # Servicios externos
-│   │   └── mercadoPago.js
 │   ├── App.jsx           # Componente principal
 │   ├── App.css
 │   ├── main.jsx          # Punto de entrada
@@ -321,26 +297,21 @@ createProduct(nuevoProducto)
 
 ## 🔒 Seguridad
 
-- ⚠️ **NUNCA** subas tus credenciales de Firebase o Mercado Pago a GitHub
+- ⚠️ **NUNCA** subas tus credenciales de Firebase a GitHub
 - Usa variables de entorno para producción
 - Configura correctamente las reglas de Firestore
 - Valida todos los datos del lado del servidor
 
 ## 📝 Notas Importantes
 
-1. **Modo de Prueba**: Usa credenciales de prueba de Mercado Pago durante el desarrollo
-2. **Reglas de Firestore**: Ajusta las reglas según tus necesidades de seguridad
-3. **Imágenes**: Puedes usar Firebase Storage para almacenar imágenes de productos
-4. **Webhooks**: Configura webhooks de Mercado Pago para recibir notificaciones de pago
+1. **Reglas de Firestore**: Ajusta las reglas según tus necesidades de seguridad
+2. **Imágenes**: Puedes usar Firebase Storage para almacenar imágenes de productos
 
 ## 🐛 Solución de Problemas
 
 ### Error: "Firebase: Error (auth/configuration-not-found)"
 - Verifica que hayas configurado correctamente `src/firebase/config.js`
 
-### Error: "Error al crear preferencia de pago"
-- Verifica tu Access Token de Mercado Pago
-- Asegúrate de usar el token correcto (producción o prueba)
 
 ### Los productos no se muestran
 - Verifica que hayas creado la colección `products` en Firestore
@@ -350,7 +321,6 @@ createProduct(nuevoProducto)
 
 Si tienes problemas o preguntas:
 1. Revisa la documentación de [Firebase](https://firebase.google.com/docs)
-2. Revisa la documentación de [Mercado Pago](https://www.mercadopago.cl/developers/es/docs)
 
 ## 📄 Licencia
 

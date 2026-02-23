@@ -13,7 +13,7 @@ Cuando algo no funciona, el navegador guarda información sobre qué salió mal.
 3. **Se abrirá una ventana** en la parte inferior o lateral de tu navegador
 4. **Busca la pestaña que dice "Console"** o **"Consola"** (en español)
 5. **Haz clic en esa pestaña**
-6. **Intenta hacer el pago** de nuevo (haz clic en "Pagar con Mercado Pago")
+6. **Intenta hacer el pago** de nuevo
 7. **Busca mensajes en ROJO** - esos son los errores
 8. **Copia el mensaje completo** que aparece en rojo
 
@@ -57,7 +57,7 @@ Cuando abras la consola, verás algo así:
 ├─────────────────────────────────────────┤
 │                                         │
 │ Error: Access Token inválido            │ ← Esto es lo que buscas (en ROJO)
-│    at mercadoPago.js:10                 │
+│    at [archivo].js:10                 │
 │                                         │
 │ Error: No hay productos en el carrito   │ ← Otro error (en ROJO)
 │                                         │
@@ -74,9 +74,9 @@ Cuando abras la consola, verás algo así:
 
 ### Error 1: "Access Token inválido"
 ```
-Error: Access Token inválido. Verifica que hayas configurado correctamente tu token de Mercado Pago.
+Error: Token inválido. Verifica que hayas configurado correctamente tu token.
 ```
-**Significa**: Tu token de Mercado Pago no está bien configurado
+**Significa**: Tu token no está bien configurado
 
 ### Error 2: "No hay productos en el carrito"
 ```

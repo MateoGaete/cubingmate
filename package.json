@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "webhook": "node server/webhook.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run webhook\""
+    "dev:all": "npm run dev"
   },
   "dependencies": {
     "cors": "^2.8.6",

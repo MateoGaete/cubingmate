@@ -282,3 +282,36 @@
     height: 35px;
   }
 }
+
+@media (max-width: 480px) {
+  .contact-page {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .contact-title {
+    font-size: 2rem;
+  }
+
+  .contact-subtitle {
+    font-size: 1rem;
+  }
+
+  .contact-hours {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .contact-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .contact-icon-wrapper {
+    width: 70px;
+    height: 70px;
+  }
+
+  .contact-icon-wrapper svg {
+    width: 30px;
+    height: 30px;
+  }
+}

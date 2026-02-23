@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getAllOrders, updateOrderStatus } from '../firebase/orders'
+import { getAllOrders, updateOrderStatus, deleteAllOrders } from '../firebase/orders'
 import { isAdmin } from '../utils/admin'
-import { Package, User, MapPin, Phone, Mail, Calendar, DollarSign, CheckCircle, Clock, XCircle, ShieldOff } from 'lucide-react'
+import { Package, User, MapPin, Phone, Mail, Calendar, DollarSign, CheckCircle, Clock, XCircle, ShieldOff, X, Trash2 } from 'lucide-react'
 import './Admin.css'
 
 function Admin() {
@@ -12,6 +12,8 @@ function Admin() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all') // all, pending, completed, cancelled
+  const [selectedOrder, setSelectedOrder] = useState(null) // Para el modal
+  const [deletingProgress, setDeletingProgress] = useState(null) // { current: 0, total: 0 }
 
   useEffect(() => {
     // Verificar que el usuario esté autenticado
@@ -88,6 +90,86 @@ function Admin() {
     } catch (error) {
       console.error('Error actualizando estado:', error)
       alert('Error al actualizar el estado')
+    }
+  }
+
+  const handleDeleteAllOrders = async () => {
+    // Confirmación doble para evitar eliminaciones accidentales
+    const firstConfirm = window.confirm(
+      `⚠️ ADVERTENCIA: Estás a punto de eliminar TODAS las órdenes (${orders.length} órdenes).\n\nEsta acción NO se puede deshacer.\n\n¿Estás seguro?`
+    )
+    
+    if (!firstConfirm) return
+    
+    const secondConfirm = window.confirm(
+      `⚠️ ÚLTIMA CONFIRMACIÓN\n\nVas a eliminar ${orders.length} órdenes permanentemente.\n\nEscribe "ELIMINAR" en el siguiente prompt para confirmar.`
+    )
+    
+    if (!secondConfirm) return
+    
+    const finalConfirm = window.prompt(
+      `Para confirmar, escribe exactamente: ELIMINAR\n\nSe eliminarán ${orders.length} órdenes.`
+    )
+    
+    if (finalConfirm !== 'ELIMINAR') {
+      alert('Eliminación cancelada. No se escribió "ELIMINAR" correctamente.')
+      return
+    }
+    
+    try {
+      setLoading(true)
+      setDeletingProgress({ current: 0, total: orders.length })
+      console.log('Iniciando eliminación de órdenes...')
+      
+      // Usar setTimeout para no bloquear el hilo principal
+      const deletedCount = await new Promise((resolve, reject) => {
+        setTimeout(async () => {
+          try {
+            const count = await deleteAllOrders((current, total) => {
+              setDeletingProgress({ current, total })
+            })
+            resolve(count)
+          } catch (error) {
+            reject(error)
+          }
+        }, 100)
+      })
+      
+      if (deletedCount > 0) {
+        // Actualizar la lista de órdenes
+        const allOrders = await getAllOrders()
+        const sortedOrders = allOrders.sort((a, b) => {
+          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt)
+          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt)
+          return dateB - dateA
+        })
+        setOrders(sortedOrders)
+        setDeletingProgress(null)
+        alert(`✅ Se eliminaron ${deletedCount} órdenes correctamente.`)
+      } else {
+        setDeletingProgress(null)
+        alert('ℹ️ No había órdenes para eliminar.')
+      }
+    } catch (error) {
+      console.error('Error eliminando órdenes:', error)
+      console.error('Detalles completos:', error)
+      setDeletingProgress(null)
+      
+      let errorMessage = '❌ Error al eliminar las órdenes.'
+      
+      if (error.message) {
+        if (error.message.includes('permission') || error.message.includes('Permission')) {
+          errorMessage = '❌ Error: No tienes permisos para eliminar órdenes.\n\nVerifica las reglas de seguridad de Firestore.'
+        } else if (error.message.includes('network') || error.message.includes('Network')) {
+          errorMessage = '❌ Error: Problema de conexión.\n\nVerifica tu conexión a internet e intenta nuevamente.'
+        } else {
+          errorMessage = `❌ Error: ${error.message}`
+        }
+      }
+      
+      alert(errorMessage + '\n\nRevisa la consola para más detalles.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -181,8 +263,37 @@ function Admin() {
     <div className="admin-page">
       <div className="admin-container">
         <div className="admin-header">
-          <h1>Panel de Administración</h1>
-          <p>Gestión de pedidos y datos de clientes</p>
+          <div className="admin-header-content">
+            <div>
+              <h1>Panel de Administración</h1>
+              <p>Gestión de pedidos y datos de clientes</p>
+            </div>
+            {orders.length > 0 && (
+              <div className="delete-all-container">
+                <button 
+                  className="btn-delete-all"
+                  onClick={handleDeleteAllOrders}
+                  disabled={loading || deletingProgress !== null}
+                  title="Eliminar todas las órdenes"
+                >
+                  <Trash2 size={20} />
+                  {deletingProgress ? (
+                    `Eliminando... ${deletingProgress.current}/${deletingProgress.total}`
+                  ) : (
+                    `Eliminar Todas (${orders.length})`
+                  )}
+                </button>
+                {deletingProgress && (
+                  <div className="delete-progress-bar">
+                    <div 
+                      className="delete-progress-fill"
+                      style={{ width: `${(deletingProgress.current / deletingProgress.total) * 100}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="admin-filters">
@@ -222,130 +333,185 @@ function Admin() {
             <p>No hay órdenes disponibles</p>
           </div>
         ) : (
-          <div className="orders-list-admin">
-            {filteredOrders.map((order) => (
-              <div key={order.id} className="order-card-admin">
-                <div className="order-header-admin">
-                  <div className="order-id-section">
-                    <Package size={24} />
+          <>
+            <div className="orders-list-admin">
+              {filteredOrders.map((order) => (
+                <div 
+                  key={order.id} 
+                  className="order-card-admin compact"
+                  onClick={() => setSelectedOrder(order)}
+                >
+                  <div className="order-card-compact-header">
+                    <div className="order-id-compact">
+                      <Package size={18} />
+                      <span className="order-id-value-compact">{order.id.substring(0, 8)}...</span>
+                    </div>
+                    <div className="order-status-compact">
+                      {getStatusIcon(order.status)}
+                      <span className={`status-badge-compact ${order.status?.toLowerCase()}`}>
+                        {getStatusText(order.status)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="order-card-compact-info">
+                    <div className="compact-info-item">
+                      <User size={14} />
+                      <span>{order.customer?.nombre} {order.customer?.apellido}</span>
+                    </div>
+                    <div className="compact-info-item">
+                      <Mail size={14} />
+                      <span>{order.customer?.email}</span>
+                    </div>
+                    <div className="compact-info-item">
+                      <MapPin size={14} />
+                      <span>{order.shipping?.comuna}</span>
+                    </div>
+                    <div className="compact-info-item">
+                      <DollarSign size={14} />
+                      <span>{formatPrice(order.total || 0)}</span>
+                    </div>
+                  </div>
+                  <div className="order-card-compact-footer">
+                    <Calendar size={12} />
+                    <span>{formatDate(order.createdAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal de detalles */}
+            {selectedOrder && (
+              <div className="order-modal-overlay" onClick={() => setSelectedOrder(null)}>
+                <div className="order-modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="order-modal-header">
                     <div>
-                      <span className="order-id-label">Orden ID:</span>
-                      <span className="order-id-value">{order.id}</span>
-                    </div>
-                  </div>
-                  <div className="order-status-section">
-                    {getStatusIcon(order.status)}
-                    <span className={`status-badge-admin ${order.status?.toLowerCase()}`}>
-                      {getStatusText(order.status)}
-                    </span>
-                    <select
-                      value={order.status || 'pending'}
-                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                      className="status-select"
-                    >
-                      <option value="pending">Pendiente</option>
-                      <option value="completed">Completado</option>
-                      <option value="cancelled">Cancelado</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="order-date-admin">
-                  <Calendar size={16} />
-                  <span>{formatDate(order.createdAt)}</span>
-                </div>
-
-                <div className="order-sections">
-                  {/* Datos del Cliente */}
-                  <div className="order-section">
-                    <h3>
-                      <User size={20} />
-                      Datos del Cliente
-                    </h3>
-                    <div className="info-grid-admin">
-                      <div className="info-item-admin">
-                        <strong>Nombre:</strong>
-                        <span>{order.customer?.nombre} {order.customer?.apellido}</span>
-                      </div>
-                      <div className="info-item-admin">
-                        <Mail size={16} />
-                        <strong>Email:</strong>
-                        <span>{order.customer?.email}</span>
-                      </div>
-                      <div className="info-item-admin">
-                        <Phone size={16} />
-                        <strong>Teléfono:</strong>
-                        <span>{order.customer?.phone}</span>
-                      </div>
-                      <div className="info-item-admin">
-                        <strong>Ciudad:</strong>
-                        <span>{order.customer?.city}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Datos de Envío */}
-                  <div className="order-section">
-                    <h3>
-                      <MapPin size={20} />
-                      Datos de Envío
-                    </h3>
-                    <div className="info-grid-admin">
-                      <div className="info-item-admin">
-                        <strong>País:</strong>
-                        <span>{order.shipping?.pais || 'Chile'}</span>
-                      </div>
-                      <div className="info-item-admin">
-                        <strong>Comuna:</strong>
-                        <span>{order.shipping?.comuna}</span>
-                      </div>
-                      <div className="info-item-admin full-width">
-                        <strong>Dirección:</strong>
-                        <span>
-                          {order.shipping?.calle} {order.shipping?.numero || (order.shipping?.calleSinNumero ? 'S/N' : '')}
+                      <h2>
+                        <Package size={24} />
+                        Orden #{selectedOrder.id}
+                      </h2>
+                      <div className="order-modal-status">
+                        {getStatusIcon(selectedOrder.status)}
+                        <span className={`status-badge-admin ${selectedOrder.status?.toLowerCase()}`}>
+                          {getStatusText(selectedOrder.status)}
                         </span>
+                        <select
+                          value={selectedOrder.status || 'pending'}
+                          onChange={(e) => {
+                            handleStatusChange(selectedOrder.id, e.target.value)
+                            setSelectedOrder({ ...selectedOrder, status: e.target.value })
+                          }}
+                          className="status-select"
+                        >
+                          <option value="pending">Pendiente</option>
+                          <option value="completed">Completado</option>
+                          <option value="cancelled">Cancelado</option>
+                        </select>
                       </div>
-                      <div className="info-item-admin">
-                        <strong>Tipo de vivienda:</strong>
-                        <span>{order.shipping?.tipoVivienda}</span>
-                      </div>
-                      {order.shipping?.codigoPostal && (
-                        <div className="info-item-admin">
-                          <strong>Código Postal:</strong>
-                          <span>{order.shipping.codigoPostal}</span>
-                        </div>
-                      )}
-                      {order.shipping?.blueExpress && (
-                        <div className="info-item-admin">
-                          <strong>BlueExpress:</strong>
-                          <span>Sí</span>
-                        </div>
-                      )}
                     </div>
+                    <button className="modal-close-btn" onClick={() => setSelectedOrder(null)}>
+                      <X size={24} />
+                    </button>
                   </div>
 
-                  {/* Productos */}
-                  <div className="order-section">
-                    <h3>Productos</h3>
-                    <div className="products-list-admin">
-                      {order.items?.map((item, index) => (
-                        <div key={index} className="product-item-admin">
-                          <span>{item.name}</span>
-                          <span>x{item.quantity}</span>
-                          <span>{formatPrice(item.price * item.quantity)}</span>
+                  <div className="order-modal-body">
+                    <div className="order-date-admin">
+                      <Calendar size={16} />
+                      <span>{formatDate(selectedOrder.createdAt)}</span>
+                    </div>
+
+                    <div className="order-sections">
+                      {/* Datos del Cliente */}
+                      <div className="order-section">
+                        <h3>
+                          <User size={20} />
+                          Datos del Cliente
+                        </h3>
+                        <div className="info-grid-admin">
+                          <div className="info-item-admin">
+                            <strong>Nombre:</strong>
+                            <span>{selectedOrder.customer?.nombre} {selectedOrder.customer?.apellido}</span>
+                          </div>
+                          <div className="info-item-admin">
+                            <Mail size={16} />
+                            <strong>Email:</strong>
+                            <span>{selectedOrder.customer?.email}</span>
+                          </div>
+                          <div className="info-item-admin">
+                            <Phone size={16} />
+                            <strong>Teléfono:</strong>
+                            <span>{selectedOrder.customer?.phone}</span>
+                          </div>
+                          <div className="info-item-admin">
+                            <strong>Ciudad:</strong>
+                            <span>{selectedOrder.customer?.city}</span>
+                          </div>
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Datos de Envío */}
+                      <div className="order-section">
+                        <h3>
+                          <MapPin size={20} />
+                          Datos de Envío
+                        </h3>
+                        <div className="info-grid-admin">
+                          <div className="info-item-admin">
+                            <strong>País:</strong>
+                            <span>{selectedOrder.shipping?.pais || 'Chile'}</span>
+                          </div>
+                          <div className="info-item-admin">
+                            <strong>Comuna:</strong>
+                            <span>{selectedOrder.shipping?.comuna}</span>
+                          </div>
+                          <div className="info-item-admin full-width">
+                            <strong>Dirección:</strong>
+                            <span>
+                              {selectedOrder.shipping?.calle} {selectedOrder.shipping?.numero || (selectedOrder.shipping?.calleSinNumero ? 'S/N' : '')}
+                            </span>
+                          </div>
+                          <div className="info-item-admin">
+                            <strong>Tipo de vivienda:</strong>
+                            <span>{selectedOrder.shipping?.tipoVivienda}</span>
+                          </div>
+                          {selectedOrder.shipping?.codigoPostal && (
+                            <div className="info-item-admin">
+                              <strong>Código Postal:</strong>
+                              <span>{selectedOrder.shipping.codigoPostal}</span>
+                            </div>
+                          )}
+                          {selectedOrder.shipping?.blueExpress && (
+                            <div className="info-item-admin">
+                              <strong>BlueExpress:</strong>
+                              <span>Sí</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Productos */}
+                      <div className="order-section">
+                        <h3>Productos</h3>
+                        <div className="products-list-admin">
+                          {selectedOrder.items?.map((item, index) => (
+                            <div key={index} className="product-item-admin">
+                              <span>{item.name}</span>
+                              <span>x{item.quantity}</span>
+                              <span>{formatPrice(item.price * item.quantity)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="order-total-admin">
+                      <DollarSign size={24} />
+                      <span>Total: {formatPrice(selectedOrder.total || 0)}</span>
                     </div>
                   </div>
-                </div>
-
-                <div className="order-total-admin">
-                  <DollarSign size={24} />
-                  <span>Total: {formatPrice(order.total || 0)}</span>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

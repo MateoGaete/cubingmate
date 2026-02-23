@@ -31,6 +31,14 @@
   .product-list {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .loading,
+  .error,
+  .no-products {
+    padding: 2rem 1rem;
+    font-size: 1rem;
   }
 }
 
@@ -39,5 +47,13 @@
   .product-list {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+    margin-top: 1rem;
+  }
+
+  .loading,
+  .error,
+  .no-products {
+    padding: 1.5rem 0.75rem;
+    font-size: 0.95rem;
   }
 }

@@ -406,6 +406,10 @@
 }
 
 @media (max-width: 768px) {
+  .product-detail {
+    padding: 0 0.5rem 2rem;
+  }
+
   .product-detail-content {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -427,5 +431,39 @@
 
   .related-products-title {
     font-size: 1.8rem;
+  }
+
+  .back-btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-detail-content {
+    padding: 1.5rem 1rem;
+    gap: 1.5rem;
+  }
+
+  .product-detail-info h1 {
+    font-size: 1.8rem;
+  }
+
+  .product-price-large {
+    font-size: 2rem;
+  }
+
+  .related-products-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .related-products-title {
+    font-size: 1.5rem;
+  }
+
+  .back-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
   }
 }

@@ -23,14 +23,18 @@ npm install
 
 **📖 Guía detallada:** Lee `FIREBASE_SETUP.md`
 
-### 3️⃣ Configurar Mercado Pago
+### 3️⃣ Configurar Sistema de Pagos
 
-1. Ve a [Mercado Pago Developers](https://www.mercadopago.cl/developers)
-2. Crea una aplicación
-3. Copia tu **Access Token** (usa el de prueba para desarrollo)
-4. Abre `src/services/mercadoPago.js` y pega tu token
+El sistema utiliza **transferencias bancarias** como método de pago.
 
-**📖 Guía detallada:** Lee `MERCADO_PAGO_SETUP.md`
+1. Edita el archivo `src/pages/TransferInstructions.jsx`
+2. Actualiza los datos bancarios con tu información:
+   - Nombre del banco
+   - Tipo de cuenta
+   - Número de cuenta
+   - Nombre del titular
+   - RUT del titular
+   - Email para confirmaciones
 
 ### 4️⃣ Agregar Productos
 
@@ -66,7 +70,7 @@ Abre tu navegador en `http://localhost:3000` 🎉
 - [ ] Firebase configurado (`src/firebase/config.js`)
 - [ ] Firestore Database creada y habilitada
 - [ ] Reglas de Firestore configuradas
-- [ ] Mercado Pago configurado (`src/services/mercadoPago.js`)
+- [ ] Sistema de pagos configurado
 - [ ] Al menos un producto agregado a Firestore
 - [ ] Aplicación funcionando en localhost
 
@@ -75,14 +79,14 @@ Abre tu navegador en `http://localhost:3000` 🎉
 1. **Ver productos**: Deberías ver tus productos en la página principal
 2. **Agregar al carrito**: Haz clic en un producto y agrega al carrito
 3. **Ver carrito**: Ve a `/cart` para ver tus productos
-4. **Probar pago**: Completa el checkout (usa tarjetas de prueba de Mercado Pago)
+4. **Probar pago**: Completa el checkout
 
 ## 🎯 Próximos Pasos
 
 1. **Personalizar diseño**: Edita los archivos CSS en `src/`
 2. **Agregar más productos**: Usa Firebase Console o el script
 3. **Configurar imágenes**: Sube imágenes a Firebase Storage
-4. **Probar pagos**: Usa las tarjetas de prueba de Mercado Pago
+4. **Probar pagos**: Completa el proceso de checkout
 5. **Desplegar**: Cuando estés listo, despliega en Firebase Hosting o Vercel
 
 ## 🆘 Problemas Comunes
@@ -94,19 +98,17 @@ Abre tu navegador en `http://localhost:3000` 🎉
 - Verifica que la colección se llame exactamente `products`
 - Revisa las reglas de Firestore (deben permitir lectura)
 
-### "Error al crear preferencia de pago"
-- Verifica tu Access Token de Mercado Pago
-- Asegúrate de usar el token correcto (prueba vs producción)
+### "Error al procesar el pedido"
+- Verifica que Firebase esté configurado correctamente
+- Revisa que los datos bancarios estén configurados en `TransferInstructions.jsx`
 
 ## 📚 Documentación Completa
 
 - **README.md** - Documentación general del proyecto
 - **FIREBASE_SETUP.md** - Guía detallada de Firebase
-- **MERCADO_PAGO_SETUP.md** - Guía detallada de Mercado Pago
 
 ## 💡 Consejos
 
-- Usa **modo de prueba** de Mercado Pago durante el desarrollo
 - Agrega productos de ejemplo para probar la funcionalidad
 - Revisa la consola del navegador (F12) si hay errores
 - Las imágenes pueden ser URLs externas o de Firebase Storage

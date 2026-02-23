@@ -20,11 +20,22 @@
 }
 
 @media (max-width: 768px) {
+  .footer {
+    padding: 1rem 0;
+  }
+
   .footer-content {
     padding: 0 1rem;
   }
 
   .footer-content p {
     font-size: 0.8rem;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-content p {
+    font-size: 0.75rem;
   }
 }

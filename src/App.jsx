@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
 import CheckoutFailure from './pages/CheckoutFailure'
 import CheckoutPending from './pages/CheckoutPending'
+import TransferInstructions from './pages/TransferInstructions'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Contact from './pages/Contact'
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/transfer" element={<TransferInstructions />} />
                 <Route path="/checkout/success" element={<CheckoutSuccess />} />
                 <Route path="/checkout/failure" element={<CheckoutFailure />} />
                 <Route path="/checkout/pending" element={<CheckoutPending />} />

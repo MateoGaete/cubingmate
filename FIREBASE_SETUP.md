@@ -225,7 +225,7 @@ Cada documento debe tener:
 Una vez configurado Firebase:
 1. Agrega algunos productos de prueba
 2. Prueba la aplicación localmente
-3. Configura Mercado Pago (ver `MERCADO_PAGO_SETUP.md`)
+3. Configura sistema de pagos (pendiente de implementar)
 
 ---
 
