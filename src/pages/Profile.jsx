@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getUserOrders } from '../firebase/orders'
+import { getUserOrders, getUserOrdersByEmail } from '../firebase/orders'
 import { User, Mail, Calendar, Package, DollarSign, MapPin, Phone, Eye } from 'lucide-react'
 import './Profile.css'
 
@@ -20,10 +20,29 @@ function Profile() {
     const fetchOrders = async () => {
       try {
         setLoading(true)
+        console.log('🔍 Buscando órdenes para usuario:', currentUser.uid, currentUser.email)
         const userOrders = await getUserOrders(currentUser.uid)
+        console.log('✅ Órdenes encontradas:', userOrders.length, userOrders)
         setOrders(userOrders)
+        
+        // Si no hay órdenes, también buscar por email como respaldo
+        if (userOrders.length === 0 && currentUser.email) {
+          console.log('⚠️ No se encontraron órdenes por userId, buscando por email...')
+          const ordersByEmail = await getUserOrdersByEmail(currentUser.email)
+          console.log('📧 Órdenes encontradas por email:', ordersByEmail.length)
+          if (ordersByEmail.length > 0) {
+            setOrders(ordersByEmail)
+          }
+        }
       } catch (error) {
-        console.error('Error obteniendo órdenes:', error)
+        console.error('❌ Error obteniendo órdenes:', error)
+        console.error('Detalles del error:', {
+          message: error.message,
+          code: error.code,
+          stack: error.stack
+        })
+        // Mostrar mensaje al usuario
+        alert('Error al cargar tus compras. Por favor recarga la página.')
       } finally {
         setLoading(false)
       }
@@ -175,59 +194,73 @@ function Profile() {
               <div className="orders-list">
                 {orders.map((order) => (
                   <div key={order.id} className="order-card">
-                    <div className="order-header">
-                      <div className="order-info">
-                        <span className="order-id">Orden #{order.id.slice(0, 8)}</span>
-                        <span className="order-date">
-                          <Calendar size={16} />
-                          {formatDate(order.createdAt)}
-                        </span>
-                      </div>
-                      <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
-                        {getStatusText(order.status)}
-                      </span>
-                    </div>
-                    
-                    {order.items && order.items.length > 0 && (
-                      <div className="order-items">
-                        <h4>Productos:</h4>
-                        <ul>
-                          {order.items.map((item, index) => (
-                            <li key={index}>
-                              {item.name} x{item.quantity} - {formatPrice(item.price * item.quantity)}
-                            </li>
+                    <div className="order-card-content">
+                      {/* Imágenes de productos */}
+                      {order.items && order.items.length > 0 && (
+                        <div className="order-products-images">
+                          {order.items.slice(0, 3).map((item, index) => (
+                            <div key={index} className="product-image-wrapper">
+                              {item.image ? (
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name}
+                                  className="product-image"
+                                  onError={(e) => {
+                                    e.target.src = '/placeholder-product.jpg'
+                                    e.target.onerror = null
+                                  }}
+                                />
+                              ) : (
+                                <div className="product-image-placeholder">🧩</div>
+                              )}
+                            </div>
                           ))}
-                        </ul>
-                      </div>
-                    )}
+                          {order.items.length > 3 && (
+                            <div className="product-image-more">+{order.items.length - 3}</div>
+                          )}
+                        </div>
+                      )}
 
-                    {order.shipping && (
-                      <div className="order-shipping">
-                        <h4>
-                          <MapPin size={16} />
-                          Dirección de envío:
-                        </h4>
-                        <p>
-                          {order.shipping.address || order.shipping.fullAddress || 
-                           `${order.shipping.calle || ''} ${order.shipping.numero || ''}`.trim()}
-                          {order.shipping.comuna && `, ${order.shipping.comuna}`}
-                          {order.shipping.pais && `, ${order.shipping.pais}`}
-                        </p>
-                      </div>
-                    )}
+                      {/* Información de la orden */}
+                      <div className="order-info-compact">
+                        <div className="order-header-compact">
+                          <div className="order-id-compact">Orden #{order.id.slice(0, 8)}</div>
+                          <span className={`status-badge-compact ${getStatusBadgeClass(order.status)}`}>
+                            {getStatusText(order.status)}
+                          </span>
+                        </div>
+                        
+                        <div className="order-date-compact">
+                          <Calendar size={14} />
+                          {formatDate(order.createdAt)}
+                        </div>
 
-                    <div className="order-footer">
-                      <div className="order-total">
-                        <DollarSign size={20} />
-                        <span>Total: {formatPrice(order.total || 0)}</span>
+                        {order.items && order.items.length > 0 && (
+                          <div className="order-items-compact">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="order-item-compact">
+                                <span className="item-name">{item.name}</span>
+                                <span className="item-quantity">x{item.quantity}</span>
+                                <span className="item-price">{formatPrice(item.price * item.quantity)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="order-footer-compact">
+                          <div className="order-total-compact">
+                            <DollarSign size={18} />
+                            <span>Total: {formatPrice(order.total || 0)}</span>
+                          </div>
+                          <Link 
+                            to={`/order/${order.id}`}
+                            className="btn-view-details-compact"
+                          >
+                            <Eye size={16} />
+                            Ver Detalles
+                          </Link>
+                        </div>
                       </div>
-                      <Link 
-                        to={`/order/${order.id}`}
-                        className="btn-view-details"
-                      >
-                        <Eye size={18} />
-                        Detalles de mi Producto
-                      </Link>
                     </div>
                   </div>
                 ))}

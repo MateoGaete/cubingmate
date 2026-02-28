@@ -104,26 +104,118 @@ export const getUserOrders = async (userId) => {
       throw new Error('Firebase no está inicializado. Por favor configura las variables de entorno de Firebase en el archivo .env')
     }
     
+    if (!userId) {
+      console.warn('⚠️ No se proporcionó userId para buscar órdenes')
+      return []
+    }
+    
+    console.log('🔍 Buscando órdenes para userId:', userId)
+    
+    const ordersRef = collection(db, 'orders')
+    
+    // Intentar primero con orderBy (requiere índice compuesto)
+    try {
+      const q = query(
+        ordersRef, 
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      )
+      const querySnapshot = await getDocs(q)
+      
+      const orders = []
+      querySnapshot.forEach((doc) => {
+        orders.push({
+          id: doc.id,
+          ...doc.data()
+        })
+      })
+      
+      console.log(`✅ Encontradas ${orders.length} órdenes con orderBy`)
+      // Ordenar manualmente por fecha si es necesario
+      return orders.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0)
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0)
+        return dateB - dateA
+      })
+    } catch (orderByError) {
+      // Si falla por falta de índice, intentar sin orderBy
+      if (orderByError.code === 'failed-precondition' || orderByError.message?.includes('index')) {
+        console.warn('⚠️ Índice compuesto no encontrado, buscando sin orderBy...')
+        const q = query(
+          ordersRef, 
+          where('userId', '==', userId)
+        )
+        const querySnapshot = await getDocs(q)
+        
+        const orders = []
+        querySnapshot.forEach((doc) => {
+          orders.push({
+            id: doc.id,
+            ...doc.data()
+          })
+        })
+        
+        console.log(`✅ Encontradas ${orders.length} órdenes sin orderBy`)
+        // Ordenar manualmente por fecha
+        return orders.sort((a, b) => {
+          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0)
+          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0)
+          return dateB - dateA
+        })
+      }
+      throw orderByError
+    }
+  } catch (error) {
+    console.error('❌ Error obteniendo órdenes:', error)
+    console.error('Detalles:', {
+      code: error.code,
+      message: error.message,
+      userId: userId
+    })
+    throw error
+  }
+}
+
+// Obtener órdenes por email (respaldo para órdenes antiguas)
+export const getUserOrdersByEmail = async (email) => {
+  try {
+    if (!db) {
+      throw new Error('Firebase no está inicializado')
+    }
+    
+    if (!email) {
+      return []
+    }
+    
+    console.log('🔍 Buscando órdenes por email:', email)
+    
     const ordersRef = collection(db, 'orders')
     const q = query(
       ordersRef, 
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('customer.email', '==', email)
     )
     const querySnapshot = await getDocs(q)
     
     const orders = []
     querySnapshot.forEach((doc) => {
+      const orderData = doc.data()
       orders.push({
         id: doc.id,
-        ...doc.data()
+        ...orderData
       })
     })
     
-    return orders
+    console.log(`✅ Encontradas ${orders.length} órdenes por email`)
+    // Ordenar por fecha
+    return orders.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0)
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0)
+      return dateB - dateA
+    })
   } catch (error) {
-    console.error('Error obteniendo órdenes:', error)
-    throw error
+    console.error('❌ Error obteniendo órdenes por email:', error)
+    // No lanzar error, solo retornar array vacío
+    return []
   }
 }
 

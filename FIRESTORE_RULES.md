@@ -18,7 +18,9 @@ service cloud.firestore {
     
     // Órdenes: lectura/escritura para usuarios autenticados
     match /orders/{orderId} {
-      // Permitir lectura si el usuario está autenticado
+      // TEMPORAL: Permitir lectura a todos los usuarios autenticados
+      // Esto permite que las consultas funcionen mientras se soluciona el problema
+      // En producción, deberías restringir esto a solo las órdenes del usuario
       allow read: if request.auth != null;
       // Permitir escritura solo si el usuario está autenticado
       allow write: if request.auth != null;
@@ -61,9 +63,31 @@ match /orders/{orderId} {
 4. Copia y pega las reglas de arriba
 5. Haz clic en **Publicar**
 
+## ⚠️ IMPORTANTE: Índice Compuesto Requerido
+
+Si ves el error "The query requires an index" al cargar las compras en el perfil:
+
+1. Ve a Firebase Console > Firestore Database > Índices
+2. Haz clic en "Crear índice"
+3. Configura:
+   - **Colección**: `orders`
+   - **Campos a indexar**:
+     - Campo 1: `userId` (Ascendente)
+     - Campo 2: `createdAt` (Descendente)
+4. Haz clic en "Crear"
+
+**O usa estas reglas temporales (menos seguras pero funcionan sin índice):**
+```javascript
+match /orders/{orderId} {
+  allow read: if request.auth != null;
+  allow write: if request.auth != null;
+}
+```
+
 ## ✅ Verificación
 
 Después de aplicar las reglas:
 - Los productos deberían ser visibles para todos
 - Las órdenes solo deberían ser visibles para usuarios autenticados
 - El contador de clientes puede mostrar 0 si no hay permisos (esto es normal y seguro)
+- **Abre la consola del navegador (F12) para ver los logs de debug cuando cargas tu perfil**

@@ -38,13 +38,21 @@ function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('transferencia')
 
   useEffect(() => {
+    // Requerir autenticación para hacer checkout
+    if (!currentUser) {
+      alert('⚠️ Debes iniciar sesión para realizar una compra.\n\nSerás redirigido a la página de inicio de sesión.')
+      navigate('/login')
+      return
+    }
+
     const cartData = JSON.parse(localStorage.getItem('cart') || '[]')
     if (cartData.length === 0) {
       navigate('/cart')
+      return
     }
     setCart(cartData)
     
-    // Si el usuario está autenticado, prellenar el email
+    // Prellenar el email del usuario autenticado
     if (currentUser?.email) {
       setIdentificationData(prev => ({
         ...prev,
@@ -170,6 +178,13 @@ function Checkout() {
       return
     }
 
+    // Validar que el usuario esté autenticado
+    if (!currentUser) {
+      alert('⚠️ Debes iniciar sesión para realizar una compra.\n\nSerás redirigido a la página de inicio de sesión.')
+      navigate('/login')
+      return
+    }
+
     // Validar que todos los datos estén completos antes de procesar
     if (!validateStep1() || !validateStep2()) {
       alert('❌ Error: Por favor completa todos los campos antes de pagar.')
@@ -204,7 +219,8 @@ function Checkout() {
         shippingCost: SHIPPING_COST,
         total: total,
         status: 'pending',
-        userId: currentUser?.uid || null
+        userId: currentUser.uid, // Siempre requerir usuario autenticado
+        paymentMethod: paymentMethod
       }
 
       console.log('📦 Datos de la orden preparados:', orderData)
@@ -213,6 +229,10 @@ function Checkout() {
       console.log('🔥 Creando orden en Firebase...')
       const orderId = await createOrder(orderData)
       console.log('✅ Orden creada en Firebase con ID:', orderId)
+
+      // Limpiar el carrito después de crear la orden
+      localStorage.removeItem('cart')
+      window.dispatchEvent(new Event('cartUpdated'))
 
       // Redirigir a página de instrucciones de transferencia
       navigate(`/checkout/transfer?orderId=${orderId}`)

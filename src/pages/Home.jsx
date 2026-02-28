@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Instagram, MessageCircle, Search, X, ChevronLeft, ChevronRight, Users, Star } from 'lucide-react'
+import { Instagram, MessageCircle, Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import ProductList from '../components/ProductList'
-import { getTotalCustomers } from '../firebase/orders'
 import './Home.css'
 
 // Array de productos con sus categorías (fuera del componente para mejor rendimiento)
@@ -1608,21 +1607,7 @@ function Home() {
   })
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalCustomers, setTotalCustomers] = useState(0)
   const productsPerPage = 20
-
-  // Cargar el número total de clientes
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const count = await getTotalCustomers()
-        setTotalCustomers(count)
-      } catch (error) {
-        console.error('Error obteniendo total de clientes:', error)
-      }
-    }
-    fetchCustomers()
-  }, [])
 
   const categories = [
     { id: null, name: 'Todos' },
@@ -1747,29 +1732,6 @@ function Home() {
         <h1>Bienvenido a CubingMate</h1>
         <p className="hero-subtitle">Somos una de las primeras tiendas en Chile que se dedica full a los cubos de Rubik</p>
         <p>Tu tienda favorita de cubos de Rubik y speedcubing, aqui encontraras de todos</p>
-      </div>
-
-      {/* Bloque separado de clientes */}
-      <div className="customers-section">
-        <div className="customers-badge">
-          <div className="customers-badge-content">
-            <div className="customers-icon-wrapper">
-              <Users size={32} className="customers-icon" />
-            </div>
-            <div className="customers-text">
-              <span className="customers-number">Más de 500</span>
-              <span className="customers-message">personas han comprado en CubingMate</span>
-            </div>
-            <div className="customers-stars">
-              <Star size={24} fill="#FFD700" stroke="#FFD700" className="star-icon" />
-              <Star size={24} fill="#FFD700" stroke="#FFD700" className="star-icon" />
-              <Star size={24} fill="#FFD700" stroke="#FFD700" className="star-icon" />
-              <Star size={24} fill="#FFD700" stroke="#FFD700" className="star-icon" />
-              <Star size={24} fill="#FFD700" stroke="#FFD700" className="star-icon" />
-            </div>
-          </div>
-          <p className="customers-submessage">¡Y ha sido genial! 🎉</p>
-        </div>
       </div>
 
       <div className="search-section">

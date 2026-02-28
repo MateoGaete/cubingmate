@@ -41,7 +41,10 @@ function CheckoutSuccess() {
               {orderId && ' El administrador ha sido notificado del pago.'}
             </p>
             <div className="success-actions">
-              <Link to="/" className="btn-primary">
+              <Link to="/profile" className="btn-primary">
+                Ver Mis Compras
+              </Link>
+              <Link to="/" className="btn-secondary">
                 Volver al Inicio
               </Link>
             </div>
