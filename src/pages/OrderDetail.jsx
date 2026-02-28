@@ -86,7 +86,7 @@ function OrderDetail() {
           text: 'Completado',
           class: 'status-completed',
           icon: CheckCircle,
-          message: 'Tu pedido ha sido completado y entregado'
+          message: '✅ Pago recibido - Tu pedido está siendo enviado'
         }
       case 'pending':
       case 'pendiente':
@@ -94,7 +94,7 @@ function OrderDetail() {
           text: 'En Procedimiento',
           class: 'status-processing',
           icon: Clock,
-          message: 'Tu pedido está siendo procesado'
+          message: 'Tu pedido está siendo procesado. Esperando confirmación de pago.'
         }
       case 'cancelled':
       case 'cancelado':
@@ -110,14 +110,14 @@ function OrderDetail() {
           text: 'En Camino',
           class: 'status-shipped',
           icon: Truck,
-          message: 'Tu pedido está en camino'
+          message: 'Tu pedido está en camino a tu dirección'
         }
       default:
         return {
           text: 'En Procedimiento',
           class: 'status-processing',
           icon: Clock,
-          message: 'Tu pedido está siendo procesado'
+          message: 'Tu pedido está siendo procesado. Esperando confirmación de pago.'
         }
     }
   }
@@ -174,38 +174,19 @@ function OrderDetail() {
 
         <div className="status-message-box">
           <StatusIcon size={20} />
-          <p>{statusInfo.message}</p>
+          <div>
+            <p><strong>{statusInfo.message}</strong></p>
+            {statusInfo.text === 'Completado' && (
+              <p className="status-submessage">
+                Cuando el estado dice "Completado" significa que recibimos tu pago y el producto está siendo enviado a tu dirección.
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="order-detail-grid">
-          {/* Información de Estado */}
-          <div className="detail-card status-card">
-            <h2>
-              <Clock size={24} />
-              Estado del Pedido
-            </h2>
-            <div className="status-details">
-              <div className="status-item">
-                <span className="status-label">Estado Actual:</span>
-                <span className={`status-value ${statusInfo.class}`}>
-                  {statusInfo.text}
-                </span>
-              </div>
-              <div className="status-item">
-                <span className="status-label">Fecha de Creación:</span>
-                <span className="status-value">{formatDate(order.createdAt)}</span>
-              </div>
-              {order.updatedAt && (
-                <div className="status-item">
-                  <span className="status-label">Última Actualización:</span>
-                  <span className="status-value">{formatDate(order.updatedAt)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Productos */}
-          <div className="detail-card products-card">
+        <div className="order-detail-content">
+          {/* Productos - Sección Principal */}
+          <div className="detail-card products-card main-section">
             <h2>
               <Package size={24} />
               Productos Comprados
@@ -214,12 +195,28 @@ function OrderDetail() {
               <div className="products-list">
                 {order.items.map((item, index) => (
                   <div key={index} className="product-item">
+                    {item.image && (
+                      <img 
+                        src={item.image} 
+                        alt={item.name}
+                        className="product-image"
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                          e.target.nextSibling.style.display = 'flex'
+                        }}
+                      />
+                    )}
+                    {!item.image && (
+                      <div className="product-image-placeholder" style={{display: item.image ? 'none' : 'flex'}}>🧩</div>
+                    )}
                     <div className="product-item-info">
                       <h3>{item.name}</h3>
-                      <p className="product-quantity">Cantidad: {item.quantity}</p>
-                      <p className="product-price">
-                        {formatPrice(item.price)} x {item.quantity} = {formatPrice(item.price * item.quantity)}
-                      </p>
+                      <div className="product-details-row">
+                        <span className="product-quantity">Cantidad: {item.quantity}</span>
+                        <span className="product-price">
+                          {formatPrice(item.price)} x {item.quantity} = {formatPrice(item.price * item.quantity)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -229,98 +226,127 @@ function OrderDetail() {
             )}
           </div>
 
-          {/* Información de Cliente */}
-          {order.customer && (
-            <div className="detail-card customer-card">
+          {/* Información Agrupada - Cliente, Dirección y Pago */}
+          <div className="order-info-group">
+            {/* Cliente y Dirección Juntos */}
+            <div className="detail-card info-card">
               <h2>
-                <User size={24} />
-                Información del Cliente
+                <User size={20} />
+                Información de Contacto y Envío
               </h2>
-              <div className="customer-info">
-                {order.customer.name && (
-                  <div className="info-row">
-                    <User size={18} />
-                    <span><strong>Nombre:</strong> {order.customer.name}</span>
+              <div className="info-group-content">
+                {order.customer && (
+                  <div className="info-section">
+                    <h3 className="info-section-title">Datos del Cliente</h3>
+                    <div className="info-compact">
+                      {order.customer.name && (
+                        <div className="info-item-compact">
+                          <User size={16} />
+                          <span>{order.customer.name}</span>
+                        </div>
+                      )}
+                      {order.customer.email && (
+                        <div className="info-item-compact">
+                          <Mail size={16} />
+                          <span>{order.customer.email}</span>
+                        </div>
+                      )}
+                      {order.customer.phone && (
+                        <div className="info-item-compact">
+                          <Phone size={16} />
+                          <span>{order.customer.phone}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
-                {order.customer.email && (
-                  <div className="info-row">
-                    <Mail size={18} />
-                    <span><strong>Email:</strong> {order.customer.email}</span>
-                  </div>
-                )}
-                {order.customer.phone && (
-                  <div className="info-row">
-                    <Phone size={18} />
-                    <span><strong>Teléfono:</strong> {order.customer.phone}</span>
+
+                {order.shipping && (
+                  <div className="info-section">
+                    <h3 className="info-section-title">Dirección de Envío</h3>
+                    <div className="info-compact">
+                      <div className="info-item-compact">
+                        <MapPin size={16} />
+                        <span>
+                          {order.shipping.address || order.shipping.fullAddress || 
+                           `${order.shipping.calle || ''} ${order.shipping.numero || ''}`.trim()}
+                          {order.shipping.comuna && `, ${order.shipping.comuna}`}
+                          {order.shipping.pais && `, ${order.shipping.pais}`}
+                        </span>
+                      </div>
+                      {order.shipping.codigoPostal && (
+                        <div className="info-item-compact">
+                          <span className="info-label-small">Código Postal:</span>
+                          <span>{order.shipping.codigoPostal}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
             </div>
-          )}
 
-          {/* Dirección de Envío */}
-          {order.shipping && (
-            <div className="detail-card shipping-card">
+            {/* Estado y Pago Juntos */}
+            <div className="detail-card info-card">
               <h2>
-                <MapPin size={24} />
-                Dirección de Envío
+                <Clock size={20} />
+                Estado y Pago
               </h2>
-              <div className="shipping-info">
-                {order.shipping.address || order.shipping.fullAddress ? (
-                  <p>{order.shipping.address || order.shipping.fullAddress}</p>
-                ) : (
-                  <>
-                    {order.shipping.calle && (
-                      <p>
-                        <strong>Calle:</strong> {order.shipping.calle}
-                        {order.shipping.numero && ` #${order.shipping.numero}`}
-                      </p>
+              <div className="info-group-content">
+                <div className="info-section">
+                  <h3 className="info-section-title">Estado del Pedido</h3>
+                  <div className="info-compact">
+                    <div className="info-item-compact">
+                      <span className="info-label-small">Estado:</span>
+                      <span className={`status-value-inline ${statusInfo.class}`}>
+                        {statusInfo.text}
+                      </span>
+                    </div>
+                    {statusInfo.text === 'Completado' && (
+                      <div className="status-explanation">
+                        <CheckCircle size={16} />
+                        <span>Pago recibido - Producto siendo enviado</span>
+                      </div>
                     )}
-                    {order.shipping.comuna && (
-                      <p><strong>Comuna:</strong> {order.shipping.comuna}</p>
+                    <div className="info-item-compact">
+                      <Calendar size={16} />
+                      <span>Fecha: {formatDate(order.createdAt)}</span>
+                    </div>
+                    {order.updatedAt && (
+                      <div className="info-item-compact">
+                        <span className="info-label-small">Actualizado:</span>
+                        <span>{formatDate(order.updatedAt)}</span>
+                      </div>
                     )}
-                    {order.shipping.region && (
-                      <p><strong>Región:</strong> {order.shipping.region}</p>
-                    )}
-                    {order.shipping.pais && (
-                      <p><strong>País:</strong> {order.shipping.pais}</p>
-                    )}
-                    {order.shipping.codigoPostal && (
-                      <p><strong>Código Postal:</strong> {order.shipping.codigoPostal}</p>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+                  </div>
+                </div>
 
-          {/* Información de Pago */}
-          <div className="detail-card payment-card">
-            <h2>
-              <DollarSign size={24} />
-              Información de Pago
-            </h2>
-            <div className="payment-info">
-              <div className="payment-row">
-                <span>Subtotal:</span>
-                <span>{formatPrice(order.subtotal || 0)}</span>
-              </div>
-              {order.shippingCost && order.shippingCost > 0 && (
-                <div className="payment-row">
-                  <span>Costo de Envío:</span>
-                  <span>{formatPrice(order.shippingCost)}</span>
+                <div className="info-section">
+                  <h3 className="info-section-title">Resumen de Pago</h3>
+                  <div className="payment-info-compact">
+                    <div className="payment-row-compact">
+                      <span>Subtotal:</span>
+                      <span>{formatPrice(order.subtotal || 0)}</span>
+                    </div>
+                    {order.shippingCost && order.shippingCost > 0 && (
+                      <div className="payment-row-compact">
+                        <span>Envío:</span>
+                        <span>{formatPrice(order.shippingCost)}</span>
+                      </div>
+                    )}
+                    <div className="payment-row-compact total-row-compact">
+                      <span><strong>Total:</strong></span>
+                      <span><strong>{formatPrice(order.total || 0)}</strong></span>
+                    </div>
+                    {order.paymentMethod && (
+                      <div className="payment-method-compact">
+                        <DollarSign size={16} />
+                        <span>{order.paymentMethod}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-              <div className="payment-row total-row">
-                <span><strong>Total:</strong></span>
-                <span><strong>{formatPrice(order.total || 0)}</strong></span>
               </div>
-              {order.paymentMethod && (
-                <div className="payment-method">
-                  <span><strong>Método de Pago:</strong> {order.paymentMethod}</span>
-                </div>
-              )}
             </div>
           </div>
         </div>
