@@ -109,14 +109,35 @@ function Login() {
       await signInWithGoogle()
       navigate('/')
     } catch (err) {
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Ventana de autenticación cerrada. Intenta nuevamente.')
-      } else if (err.code === 'auth/popup-blocked') {
-        setError('La ventana emergente fue bloqueada. Permite ventanas emergentes e intenta nuevamente.')
-      } else {
-        setError('Error al iniciar sesión con Google. Intenta nuevamente.')
+      console.error('Error completo de Google:', err)
+      
+      let errorMessage = 'Error al iniciar sesión con Google. Intenta nuevamente.'
+      
+      if (err.code) {
+        switch (err.code) {
+          case 'auth/popup-closed-by-user':
+            errorMessage = 'Ventana de autenticación cerrada. Intenta nuevamente.'
+            break
+          case 'auth/popup-blocked':
+            errorMessage = 'La ventana emergente fue bloqueada. Permite ventanas emergentes e intenta nuevamente.'
+            break
+          case 'auth/unauthorized-domain':
+            errorMessage = 'Este dominio no está autorizado para autenticación con Google. Por favor, contacta al administrador o verifica la configuración en Firebase Console.'
+            break
+          case 'auth/operation-not-allowed':
+            errorMessage = 'El método de autenticación con Google no está habilitado. Contacta al administrador.'
+            break
+          case 'auth/network-request-failed':
+            errorMessage = 'Error de conexión. Verifica tu internet e intenta nuevamente.'
+            break
+          default:
+            errorMessage = `Error: ${err.message || err.code || 'Error desconocido'}`
+        }
+      } else if (err.message) {
+        errorMessage = err.message
       }
-      console.error(err)
+      
+      setError(errorMessage)
     } finally {
       setGoogleLoading(false)
     }

@@ -38,7 +38,13 @@ export async function saveUserToFirestore(userData) {
     await setDoc(userRef, userDoc, { merge: true })
     console.log('Usuario guardado/actualizado en Firestore:', userData.uid)
   } catch (error) {
-    console.error('Error guardando usuario en Firestore:', error)
+    // Si es error de permisos, mostrar advertencia en lugar de error
+    if (error.code === 'permission-denied' || error.message?.includes('permission')) {
+      console.warn('No se pudo guardar el usuario en Firestore: permisos insuficientes. Verifica las reglas de Firestore.')
+      console.warn('El usuario está autenticado pero no puede escribir en /users/{uid}. Verifica que las reglas permitan: allow write: if request.auth != null && request.auth.uid == userId;')
+    } else {
+      console.error('Error guardando usuario en Firestore:', error)
+    }
     // No lanzar el error para que no rompa el flujo de autenticación
   }
 }

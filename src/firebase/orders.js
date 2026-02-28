@@ -154,6 +154,8 @@ export const getAllOrders = async () => {
 }
 
 // Obtener el número total de clientes únicos que han comprado
+// Nota: Esta función requiere permisos de lectura en la colección 'orders'
+// Si falla por permisos, retorna 0 silenciosamente
 export const getTotalCustomers = async () => {
   try {
     if (!db) {
@@ -174,7 +176,15 @@ export const getTotalCustomers = async () => {
     
     return uniqueEmails.size
   } catch (error) {
-    console.error('Error obteniendo total de clientes:', error)
+    // Si es error de permisos, no mostrar error en consola (es esperado si las reglas no permiten lectura pública)
+    if (error.code === 'permission-denied' || error.message?.includes('permission')) {
+      // No mostrar nada en consola para este error específico, es esperado
+      return 0
+    }
+    // Solo mostrar errores que no sean de permisos
+    if (error.code !== 'permission-denied') {
+      console.error('Error obteniendo total de clientes:', error)
+    }
     return 0
   }
 }

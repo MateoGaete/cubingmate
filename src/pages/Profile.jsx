@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getUserOrders } from '../firebase/orders'
-import { User, Mail, Calendar, Package, DollarSign, MapPin, Phone } from 'lucide-react'
+import { User, Mail, Calendar, Package, DollarSign, MapPin, Phone, Eye } from 'lucide-react'
 import './Profile.css'
 
 function Profile() {
@@ -221,6 +221,13 @@ function Profile() {
                         <DollarSign size={20} />
                         <span>Total: {formatPrice(order.total || 0)}</span>
                       </div>
+                      <Link 
+                        to={`/order/${order.id}`}
+                        className="btn-view-details"
+                      >
+                        <Eye size={18} />
+                        Detalles de mi Producto
+                      </Link>
                     </div>
                   </div>
                 ))}
