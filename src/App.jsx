@@ -16,6 +16,7 @@ import Register from './pages/Register'
 import Contact from './pages/Contact'
 import Profile from './pages/Profile'
 import Admin from './pages/Admin'
+import FirebaseDiagnostics from './pages/FirebaseDiagnostics'
 import { isAdmin } from './utils/admin'
 import './App.css'
 
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/firebase-diagnostics" element={<FirebaseDiagnostics />} />
                 <Route 
                   path="/admin" 
                   element={
